@@ -1,0 +1,40 @@
+﻿query Users($workspaceUrl: String!) {
+  desTeam(workspaceUrl: $workspaceUrl) {
+    users {
+      ...MyUser
+    }
+  }
+}
+
+fragment MyUser on DesUser {
+  userId
+  userName
+  email
+  firstName
+  lastName
+  groups {
+    name
+  }
+}
+
+mutation CreateUser($input: DesCreateUserInput!) {
+  desCreateUser(input: $input) {
+    userId
+  }
+}
+
+mutation DeleteUser($input: DesDeleteUserInput!) {
+  desDeleteUser(input: $input) {
+    errors {
+      message
+    }
+  }
+}
+
+mutation UpdateUser($input: DesUpdateUserInput!) {
+  desUpdateUser(input: $input) {
+    errors {
+      message
+    }
+  }
+}

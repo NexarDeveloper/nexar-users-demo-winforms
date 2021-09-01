@@ -1,0 +1,7 @@
+﻿query Groups($workspaceUrl: String!) {
+  desTeam(workspaceUrl: $workspaceUrl) {
+    groups {
+      name
+    }
+  }
+}

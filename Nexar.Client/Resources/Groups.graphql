@@ -1,7 +1,38 @@
 ﻿query Groups($workspaceUrl: String!) {
   desTeam(workspaceUrl: $workspaceUrl) {
     groups {
+      id
       name
     }
+  }
+}
+
+mutation CreateGroup($workspaceUrl: String!, $name: String!) {
+  desCreateUserGroup(input: {workspaceUrl: $workspaceUrl, name: $name}) {
+    id
+  }
+}
+
+mutation DeleteGroup($id: ID!) {
+  desDeleteUserGroup(input: {id: $id}) {
+    errors { message }
+  }
+}
+
+mutation RenameGroup($id: ID!, $name: String!) {
+  desUpdateUserGroup(input: {id: $id, name: $name}) {
+    errors { message }
+  }
+}
+
+mutation AddUserToGroup($id: ID!, $userId: String!) {
+  desAddUsersToGroup(input: {id: $id, userIds: [$userId]}) {
+    errors { message }
+  }
+}
+
+mutation RemoveUserFromGroup($id: ID!, $userId: String!) {
+  desRemoveUsersFromGroup(input: {id: $id, userIds: [$userId]}) {
+    errors { message }
   }
 }

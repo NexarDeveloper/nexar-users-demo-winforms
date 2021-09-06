@@ -51,9 +51,9 @@
             this.contextMeneGroup.SuspendLayout();
             this.contextMenuUser.SuspendLayout();
             this.SuspendLayout();
-            // 
+            //
             // listViewGroup
-            // 
+            //
             this.listViewGroup.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeaderName});
             this.listViewGroup.ContextMenuStrip = this.contextMeneGroup;
@@ -70,43 +70,43 @@
             this.listViewGroup.View = System.Windows.Forms.View.Details;
             this.listViewGroup.AfterLabelEdit += new System.Windows.Forms.LabelEditEventHandler(this.listViewGroup_AfterLabelEdit);
             this.listViewGroup.SelectedIndexChanged += new System.EventHandler(this.listViewGroup_SelectedIndexChanged);
-            // 
+            //
             // columnHeaderName
-            // 
+            //
             this.columnHeaderName.Text = "Group Name";
             this.columnHeaderName.Width = 620;
-            // 
+            //
             // contextMeneGroup
-            // 
+            //
             this.contextMeneGroup.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.addGroupToolStripMenuItem,
             this.deleteGroupToolStripMenuItem});
             this.contextMeneGroup.Name = "contextMeneGroup";
             this.contextMeneGroup.Size = new System.Drawing.Size(144, 48);
-            // 
+            //
             // addGroupToolStripMenuItem
-            // 
+            //
             this.addGroupToolStripMenuItem.Name = "addGroupToolStripMenuItem";
             this.addGroupToolStripMenuItem.Size = new System.Drawing.Size(143, 22);
             this.addGroupToolStripMenuItem.Text = "Add Group";
             this.addGroupToolStripMenuItem.Click += new System.EventHandler(this.addGroupToolStripMenuItem_Click);
-            // 
+            //
             // deleteGroupToolStripMenuItem
-            // 
+            //
             this.deleteGroupToolStripMenuItem.Name = "deleteGroupToolStripMenuItem";
             this.deleteGroupToolStripMenuItem.Size = new System.Drawing.Size(143, 22);
             this.deleteGroupToolStripMenuItem.Text = "Delete Group";
             this.deleteGroupToolStripMenuItem.Click += new System.EventHandler(this.deleteGroupToolStripMenuItem_Click);
-            // 
+            //
             // imageList1
-            // 
+            //
             this.imageList1.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("imageList1.ImageStream")));
             this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
             this.imageList1.Images.SetKeyName(0, "group.png");
             this.imageList1.Images.SetKeyName(1, "user.png");
-            // 
+            //
             // listViewUser
-            // 
+            //
             this.listViewUser.CheckBoxes = true;
             this.listViewUser.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeaderUserName,
@@ -126,64 +126,64 @@
             this.listViewUser.UseCompatibleStateImageBehavior = false;
             this.listViewUser.View = System.Windows.Forms.View.Details;
             this.listViewUser.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.listViewUser_ItemCheck);
-            // 
+            //
             // columnHeaderUserName
-            // 
+            //
             this.columnHeaderUserName.Text = "User Name";
             this.columnHeaderUserName.Width = 180;
-            // 
+            //
             // columnHeaderFirstName
-            // 
+            //
             this.columnHeaderFirstName.Text = "First Name";
             this.columnHeaderFirstName.Width = 75;
-            // 
+            //
             // columnHeaderLastName
-            // 
+            //
             this.columnHeaderLastName.Text = "Last Name";
             this.columnHeaderLastName.Width = 75;
-            // 
+            //
             // columnHeaderEmail
-            // 
+            //
             this.columnHeaderEmail.Text = "Email";
             this.columnHeaderEmail.Width = 180;
-            // 
+            //
             // columnHeaderRole
-            // 
+            //
             this.columnHeaderRole.Text = "Role";
             this.columnHeaderRole.Width = 110;
-            // 
+            //
             // contextMenuUser
-            // 
+            //
             this.contextMenuUser.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.addUserToolStripMenuItem,
             this.deleteUserToolStripMenuItem,
             this.updateUserToolStripMenuItem});
             this.contextMenuUser.Name = "contextMeneGroup";
             this.contextMenuUser.Size = new System.Drawing.Size(181, 92);
-            // 
+            //
             // addUserToolStripMenuItem
-            // 
+            //
             this.addUserToolStripMenuItem.Name = "addUserToolStripMenuItem";
             this.addUserToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.addUserToolStripMenuItem.Text = "Add User";
             this.addUserToolStripMenuItem.Click += new System.EventHandler(this.addUserToolStripMenuItem_Click);
-            // 
+            //
             // updateUserToolStripMenuItem
-            // 
+            //
             this.updateUserToolStripMenuItem.Name = "updateUserToolStripMenuItem";
             this.updateUserToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.updateUserToolStripMenuItem.Text = "Update User";
             this.updateUserToolStripMenuItem.Click += new System.EventHandler(this.updateUserToolStripMenuItem_Click);
-            // 
+            //
             // deleteUserToolStripMenuItem
-            // 
+            //
             this.deleteUserToolStripMenuItem.Name = "deleteUserToolStripMenuItem";
             this.deleteUserToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.deleteUserToolStripMenuItem.Text = "Delete User";
             this.deleteUserToolStripMenuItem.Click += new System.EventHandler(this.deleteUserToolStripMenuItem_Click);
-            // 
+            //
             // comboWorkspaces
-            // 
+            //
             this.comboWorkspaces.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboWorkspaces.FormattingEnabled = true;
             this.comboWorkspaces.Location = new System.Drawing.Point(81, 10);
@@ -191,18 +191,18 @@
             this.comboWorkspaces.Size = new System.Drawing.Size(555, 21);
             this.comboWorkspaces.TabIndex = 0;
             this.comboWorkspaces.SelectionChangeCommitted += new System.EventHandler(this.comboWorkspaces_SelectionChangeCommitted);
-            // 
+            //
             // label1
-            // 
+            //
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(13, 13);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(62, 13);
             this.label1.TabIndex = 3;
             this.label1.Text = "Workspace";
-            // 
+            //
             // Form_Management
-            // 
+            //
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(648, 461);
@@ -215,7 +215,7 @@
             this.MaximizeBox = false;
             this.Name = "Form_Management";
             this.Text = "Nexar.Users";
-            this.Load += new System.EventHandler(this.Form_Managment_Load);
+            this.Load += new System.EventHandler(this.Form_Management_Load);
             this.contextMeneGroup.ResumeLayout(false);
             this.contextMenuUser.ResumeLayout(false);
             this.ResumeLayout(false);

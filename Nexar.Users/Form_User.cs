@@ -5,21 +5,16 @@ using System.Windows.Forms;
 
 namespace Nexar.Users
 {
+    /// <summary>
+    /// User details dialog used for adding a user and updating details.
+    /// </summary>
     public partial class Form_User : Form
     {
-        public class UserInfo
-        {
-            public string UserName;
-            public string Password;
-            public string FirstName;
-            public string LastName;
-        }
-
-        public UserInfo User { get; }
+        UserInfo User { get; }
 
         private readonly bool _addUser;
 
-        public Form_User(UserInfo user, bool addUser)
+        internal Form_User(UserInfo user, bool addUser)
         {
             InitializeComponent();
 

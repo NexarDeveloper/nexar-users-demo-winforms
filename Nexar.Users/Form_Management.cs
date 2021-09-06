@@ -1,6 +1,5 @@
 ﻿using Nexar.Client;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -10,8 +9,6 @@ namespace Nexar.Users
     public partial class Form_Management : Form
     {
         IMyWorkspace _workspace;
-        IReadOnlyList<IGroups_DesTeam_Groups> _groups;
-        IReadOnlyList<IUsers_DesTeam_Users> _users;
         bool _ignoreCheckboxEvents;
 
         public Form_Management()
@@ -19,65 +16,112 @@ namespace Nexar.Users
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Fetches groups and populates the list.
+        /// </summary>
         private void RefreshGroupList()
         {
-            this.listViewGroup.Items.Clear();
-            this.listViewGroup.BeginUpdate();
-            try
+            using (new WaitCursor())
             {
-                foreach (var group in _groups)
+                listViewGroup.BeginUpdate();
+                listViewGroup.Items.Clear();
+                try
                 {
-                    var item = new ListViewItem(group.Name, 0);
-                    this.listViewGroup.Items.Add(item);
+                    var groups = Task.Run(async () =>
+                    {
+                        var res = await App.Client.Groups.ExecuteAsync(_workspace.Url);
+                        ClientHelper.EnsureNoErrors(res);
+                        return res.Data.DesTeam.Groups.OrderBy(x => x.Name);
+                    }).Result;
+
+                    foreach (var group in groups)
+                    {
+                        var item = new ListViewItem(group.Name, 0)
+                        {
+                            Name = group.Name,
+                            Tag = group.Id
+                        };
+                        listViewGroup.Items.Add(item);
+                    }
                 }
-            }
-            finally
-            {
-                this.listViewGroup.EndUpdate();
+                finally
+                {
+                    listViewGroup.EndUpdate();
+                }
             }
         }
 
-        private void RefreshUserList(string groupName)
+        /// <summary>
+        /// Fetches users and populates the list.
+        /// </summary>
+        private void RefreshUserList(string groupId)
         {
-            listViewUser.Items.Clear();
-            this.listViewUser.BeginUpdate();
-            _ignoreCheckboxEvents = true;
-            try
+            using (new WaitCursor())
             {
-                listViewUser.CheckBoxes = !string.IsNullOrEmpty(groupName);
-
-                foreach (var user in _users)
+                listViewUser.BeginUpdate();
+                listViewUser.Items.Clear();
+                _ignoreCheckboxEvents = true;
+                try
                 {
-                    if (user.UserName == null)
-                        continue;
-
-                    var item = new ListViewItem(new string[5]
+                    var users = Task.Run(async () =>
                     {
-                        user.UserName,
-                        user.FirstName,
-                        user.LastName,
-                        user.Email,
-                        string.Join(", ", user.Groups.Select(x => x.Name)),
-                    }, 1)
+                        var res = await App.Client.Users.ExecuteAsync(_workspace.Url);
+                        ClientHelper.EnsureNoErrors(res);
+                        return res.Data.DesTeam.Users.OrderBy(x => x.Email);
+                    }).Result;
+
+                    listViewUser.CheckBoxes = groupId != null;
+
+                    foreach (var user in users)
                     {
-                        Name = user.UserName,
-                        Tag = user
-                    };
+                        if (user.UserName == null)
+                            continue;
 
-                    if (!string.IsNullOrEmpty(groupName))
-                        item.Checked = user.Groups.FirstOrDefault(x => x.Name == groupName) != null;
+                        var tag = new UserInfo(user);
+                        var item = NewUserListItem(tag);
+                        if (groupId != null)
+                            item.Checked = tag.Groups.Exists(x => x.Id == groupId);
 
-                    listViewUser.Items.Add(item);
+                        listViewUser.Items.Add(item);
+                    }
                 }
-            }
-            finally
-            {
-                this.listViewUser.EndUpdate();
-                _ignoreCheckboxEvents = false;
+                finally
+                {
+                    listViewUser.EndUpdate();
+                    _ignoreCheckboxEvents = false;
+                }
             }
         }
 
-        private void Form_Managment_Load(object sender, EventArgs e)
+        /// <summary>
+        /// Creates a new user list item.
+        /// </summary>
+        private static ListViewItem NewUserListItem(UserInfo user)
+        {
+            var roles = user.Groups
+                .OrderBy(x => x.Name)
+                .Select(x => x.Name);
+
+            var items = new string[5]
+            {
+                user.UserName,
+                user.FirstName,
+                user.LastName,
+                user.Email,
+                string.Join(", ", roles),
+            };
+
+            return new ListViewItem(items, 1)
+            {
+                Name = user.UserName,
+                Tag = user
+            };
+        }
+
+        /// <summary>
+        /// Login, fetch workspaces, populate the workspace list.
+        /// </summary>
+        private void Form_Management_Load(object sender, EventArgs e)
         {
             // show the endpoint in the title
             Text = $"Login... {Config.ApiEndpoint}";
@@ -104,16 +148,16 @@ namespace Nexar.Users
                         Invoke((MethodInvoker)(() =>
                         {
                             // populate workspaces
-                            this.comboWorkspaces.BeginUpdate();
+                            comboWorkspaces.BeginUpdate();
                             try
                             {
                                 foreach (var workspace in App.Workspaces)
-                                    this.comboWorkspaces.Items.Add(workspace.Name);
+                                    comboWorkspaces.Items.Add(workspace.Name);
                             }
                             finally
                             {
-                                this.comboWorkspaces.Enabled = true;
-                                this.comboWorkspaces.EndUpdate();
+                                comboWorkspaces.Enabled = true;
+                                comboWorkspaces.EndUpdate();
                             }
 
                             // end
@@ -130,60 +174,162 @@ namespace Nexar.Users
             });
         }
 
-        private async Task QueryUsersAsync()
-        {
-            var res = await App.Client.Users.ExecuteAsync(_workspace.Url);
-            ClientHelper.EnsureNoErrors(res);
-            _users = res.Data.DesTeam.Users.OrderBy(x => x.Email).ToList();
-        }
-
+        /// <summary>
+        /// Sets the selected workspace current and refreshes lists.
+        /// </summary>
         private void comboWorkspaces_SelectionChangeCommitted(object sender, EventArgs e)
         {
-            using (new WaitCursor())
+            _workspace = App.Workspaces[comboWorkspaces.SelectedIndex];
+            RefreshGroupList();
+            RefreshUserList(null);
+        }
+
+        /// <summary>
+        /// Adds "New Group".
+        /// </summary>
+        private void addGroupToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            int newGroupNumber = 1;
+            var newGroupName = "New Group";
+            while (listViewGroup.Items.ContainsKey(newGroupName))
             {
-                _workspace = App.Workspaces[this.comboWorkspaces.SelectedIndex];
+                ++newGroupNumber;
+                newGroupName = $"New Group {newGroupNumber}";
+            }
 
-                Task.Run(async () =>
+            try
+            {
+                using (new WaitCursor())
                 {
-                    // get groups
-                    var res = await App.Client.Groups.ExecuteAsync(_workspace.Url);
-                    ClientHelper.EnsureNoErrors(res);
-                    _groups = res.Data.DesTeam.Groups.OrderBy(x => x.Name).ToList();
+                    var newGroup = Task.Run(async () =>
+                    {
+                        var res = await App.Client.CreateGroup.ExecuteAsync(_workspace.Url, newGroupName);
+                        ClientHelper.EnsureNoErrors(res);
 
-                    await QueryUsersAsync();
-                }).Wait();
+                        return new Groups_DesTeam_Groups_DesUserGroup(res.Data.DesCreateUserGroup.Id, newGroupName);
+                    }).Result;
 
-                RefreshGroupList();
-                RefreshUserList("");
+                    var item = new ListViewItem(newGroupName, 0)
+                    {
+                        Name = newGroup.Name,
+                        Tag = newGroup.Id
+                    };
+
+                    listViewGroup.Items.Add(item);
+                    item.Selected = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                App.ShowException(ex);
             }
         }
 
-        private void addGroupToolStripMenuItem_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Gets the selected group ID or null.
+        /// </summary>
+        private string GetSelectedGroupId()
         {
-            MessageBox.Show("Not yet implemented."); //TODO
+            return listViewGroup.SelectedItems.Count == 1 ? (string)listViewGroup.SelectedItems[0].Tag : null;
         }
 
+        /// <summary>
+        /// Deletes the selected group.
+        /// </summary>
         private void deleteGroupToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Not yet implemented."); //TODO
+            var groupId = GetSelectedGroupId();
+            if (groupId is null)
+                return;
+
+            if (!App.Ask("Delete group?"))
+                return;
+
+            try
+            {
+                using (new WaitCursor())
+                {
+                    Task.Run(async () =>
+                    {
+                        var res = await App.Client.DeleteGroup.ExecuteAsync(groupId);
+                        ClientHelper.EnsureNoErrors(res);
+                    }).Wait();
+
+                    RefreshGroupList();
+                    RefreshUserList(null);
+                }
+            }
+            catch (Exception ex)
+            {
+                App.ShowException(ex);
+            }
         }
 
+        /// <summary>
+        /// Renames the group with its edited label.
+        /// </summary>
         private void listViewGroup_AfterLabelEdit(object sender, LabelEditEventArgs e)
         {
-            MessageBox.Show("Not yet implemented."); //TODO
-            e.CancelEdit = true;
+            var groupId = GetSelectedGroupId();
+            if (groupId is null)
+                return;
+
+            try
+            {
+                using (new WaitCursor())
+                {
+                    Task.Run(async () =>
+                    {
+                        var res = await App.Client.RenameGroup.ExecuteAsync(groupId, e.Label);
+                        ClientHelper.EnsureNoErrors(res);
+                    }).Wait();
+
+                    listViewGroup.SelectedItems[0].Name = e.Label;
+                }
+
+                RefreshUserList(groupId);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                e.CancelEdit = true;
+            }
         }
 
+        /// <summary>
+        /// Updates the user list checkboxes for the selected group.
+        /// </summary>
         private void listViewGroup_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var groupName = GetSelectedGroupName();
-            RefreshUserList(groupName);
+            var groupId = GetSelectedGroupId();
+
+            listViewUser.BeginUpdate();
+            _ignoreCheckboxEvents = true;
+
+            if (groupId is null)
+            {
+                listViewUser.CheckBoxes = false;
+            }
+            else
+            {
+                listViewUser.CheckBoxes = true;
+                foreach (ListViewItem item in listViewUser.Items)
+                {
+                    var user = (UserInfo)item.Tag;
+                    item.Checked = user.Groups.Exists(x => x.Id == groupId);
+                }
+            }
+
+            listViewUser.EndUpdate();
+            _ignoreCheckboxEvents = false;
         }
 
-        //TODO add to the current group, if any
+        /// <summary>
+        /// Adds a new user.
+        /// </summary>
         private void addUserToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var user = new Form_User.UserInfo();
+            var user = new UserInfo();
             var userForm = new Form_User(user, true);
             if (userForm.ShowDialog() != DialogResult.OK)
                 return;
@@ -206,12 +352,10 @@ namespace Nexar.Users
                         };
                         var res = await App.Client.CreateUser.ExecuteAsync(input);
                         ClientHelper.EnsureNoErrors(res);
-
-                        await QueryUsersAsync();
                     }).Wait();
 
-                    var groupName = GetSelectedGroupName();
-                    RefreshUserList(groupName);
+                    var groupId = GetSelectedGroupId();
+                    RefreshUserList(groupId);
                 }
             }
             catch (Exception ex)
@@ -220,21 +364,24 @@ namespace Nexar.Users
             }
         }
 
+        /// <summary>
+        /// Updates the selected user details.
+        /// </summary>
         private void updateUserToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (listViewUser.SelectedItems.Count != 1)
                 return;
 
-            var user1 = listViewUser.SelectedItems[0].Tag as IMyUser;
+            var user1 = (UserInfo)listViewUser.SelectedItems[0].Tag;
 
-            var user2 = new Form_User.UserInfo
+            var user2 = new UserInfo
             {
                 UserName = user1.UserName,
                 FirstName = user1.FirstName,
                 LastName = user1.LastName,
             };
 
-            Form_User userForm = new Form_User(user2, false);
+            var userForm = new Form_User(user2, false);
             if (userForm.ShowDialog() != DialogResult.OK)
                 return;
 
@@ -254,12 +401,10 @@ namespace Nexar.Users
                         };
                         var res = await App.Client.UpdateUser.ExecuteAsync(input);
                         ClientHelper.EnsureNoErrors(res);
-
-                        await QueryUsersAsync();
                     }).Wait();
 
-                    var groupName = GetSelectedGroupName();
-                    RefreshUserList(groupName);
+                    var groupId = GetSelectedGroupId();
+                    RefreshUserList(groupId);
                 }
             }
             catch (Exception ex)
@@ -268,6 +413,9 @@ namespace Nexar.Users
             }
         }
 
+        /// <summary>
+        /// Deletes the selected user.
+        /// </summary>
         private void deleteUserToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (listViewUser.SelectedItems.Count != 1)
@@ -281,7 +429,7 @@ namespace Nexar.Users
                 using (new WaitCursor())
                 {
                     var item = listViewUser.SelectedItems[0];
-                    var user = (IMyUser)item.Tag;
+                    var user = (UserInfo)item.Tag;
 
                     Task.Run(async () =>
                     {
@@ -293,12 +441,10 @@ namespace Nexar.Users
                         };
                         var res = await App.Client.DeleteUser.ExecuteAsync(input);
                         ClientHelper.EnsureNoErrors(res);
-
-                        await QueryUsersAsync();
                     }).Wait();
 
-                    var groupName = GetSelectedGroupName();
-                    RefreshUserList(groupName);
+                    var groupId = GetSelectedGroupId();
+                    RefreshUserList(groupId);
                 }
             }
             catch (Exception ex)
@@ -307,44 +453,64 @@ namespace Nexar.Users
             }
         }
 
-        private string GetSelectedGroupName()
-        {
-            if (listViewGroup.SelectedItems.Count != 1)
-                return "";
-
-            var item = listViewGroup.SelectedItems[0];
-            return item.Text;
-        }
-
+        /// <summary>
+        /// Adds or removes the user to the selected group.
+        /// </summary>
         private void listViewUser_ItemCheck(object sender, ItemCheckEventArgs e)
         {
             if (_ignoreCheckboxEvents)
                 return;
 
-            if (e.NewValue == CheckState.Checked)
+            var groupId = GetSelectedGroupId();
+            var user = (UserInfo)listViewUser.Items[e.Index].Tag;
+
+            using (new WaitCursor())
             {
-                try
+                if (e.NewValue == CheckState.Checked)
                 {
-                    MessageBox.Show("Not yet implemented."); //TODO add to group
-                    e.NewValue = CheckState.Unchecked;
+                    try
+                    {
+                        Task.Run(async () =>
+                        {
+                            // add user to group
+                            var res = await App.Client.AddUserToGroup.ExecuteAsync(groupId, user.UserId);
+                            ClientHelper.EnsureNoErrors(res);
+                        }).Wait();
+
+                        _ignoreCheckboxEvents = true;
+                        var groupName = listViewGroup.SelectedItems[0].Name;
+                        user.Groups.Add(new GroupInfo { Id = groupId, Name = groupName });
+                        var item = NewUserListItem(user);
+                        item.Checked = true;
+                        listViewUser.Items[e.Index] = item;
+                        _ignoreCheckboxEvents = false;
+                    }
+                    catch (Exception ex)
+                    {
+                        App.ShowException(ex);
+                        e.NewValue = CheckState.Unchecked;
+                    }
                 }
-                catch (Exception ex)
+                else
                 {
-                    App.ShowException(ex);
-                    e.NewValue = CheckState.Unchecked;
-                }
-            }
-            else
-            {
-                try
-                {
-                    MessageBox.Show("Not yet implemented."); //TODO remove from group
-                    e.NewValue = CheckState.Checked;
-                }
-                catch (Exception ex)
-                {
-                    App.ShowException(ex);
-                    e.NewValue = CheckState.Checked;
+                    try
+                    {
+                        Task.Run(async () =>
+                        {
+                            // remove user from group
+                            var res = await App.Client.RemoveUserFromGroup.ExecuteAsync(groupId, user.UserId);
+                            ClientHelper.EnsureNoErrors(res);
+                        }).Wait();
+
+                        user.Groups.RemoveAll(x => x.Id == groupId);
+                        var item = NewUserListItem(user);
+                        listViewUser.Items[e.Index] = item;
+                    }
+                    catch (Exception ex)
+                    {
+                        App.ShowException(ex);
+                        e.NewValue = CheckState.Checked;
+                    }
                 }
             }
         }

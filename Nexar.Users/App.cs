@@ -11,18 +11,12 @@ namespace Nexar.Users
     static class App
     {
         public static NexarClient Client { get; private set; }
-        public static IReadOnlyList<IMyWorkspace> Workspaces { get; private set; }
-        public static string Username => Login.Username;
-
         public static LoginInfo Login { get; private set; }
+        public static IReadOnlyList<IMyWorkspace> Workspaces { get; private set; }
+
         /// <summary>
-        /// Run this as a task after the window is shown.
+        /// Starts the browser sign in page and gets the login data.
         /// </summary>
-        /// <remarks>
-        /// Why not before as it used to be. If a user does not login and maybe closes the login page,
-        /// then the application is running waiting for the login. The user may not know about it.
-        /// So, with the window shown the user is aware of it and may close.
-        /// </remarks>
         public static async Task LoginAsync()
         {
             try
@@ -42,6 +36,10 @@ namespace Nexar.Users
             }
         }
 
+        /// <summary>
+        /// Gets and caches user workspaces.
+        /// </summary>
+        /// <returns></returns>
         public static async Task LoadWorkspacesAsync()
         {
             try
@@ -69,6 +67,9 @@ namespace Nexar.Users
             }
         }
 
+        /// <summary>
+        /// Shows the exception message box.
+        /// </summary>
         public static void ShowException(Exception ex)
         {
             if (ex is AggregateException aggr && aggr.InnerExceptions.Count == 1)
@@ -78,6 +79,9 @@ namespace Nexar.Users
             MessageBox.Show(message, Config.MyTitle, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
         }
 
+        /// <summary>
+        /// Shows the Yes/No dialog.
+        /// </summary>
         public static bool Ask(string message)
         {
             var res = MessageBox.Show(message, Config.MyTitle, MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1);

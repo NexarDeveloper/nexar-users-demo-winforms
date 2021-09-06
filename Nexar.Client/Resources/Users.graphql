@@ -13,6 +13,7 @@ fragment MyUser on DesUser {
   firstName
   lastName
   groups {
+    id
     name
   }
 }

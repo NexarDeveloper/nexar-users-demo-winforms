@@ -16,6 +16,8 @@ Visual Studio 2019.
 You need your Altium Live credentials and have to be a member of at least one Altium 365 workspace.
 
 In addition, you need an application at [nexar.com] with the Design scope.
+If you have not done this already, please [register at nexar.com](https://github.com/NexarDeveloper/nexar-forum/discussions/4).
+
 Use the application client ID and secret and set environment variables `NEXAR_CLIENT_ID` and `NEXAR_CLIENT_SECRET`.
 
 ## How to use
@@ -33,14 +35,15 @@ Select a workspace from the list. As a result, the group and user lists are popu
 
 Use the context menu with the following commands:
 
-- Add group `(under construction)`
-- Delete group `(under construction)`
+- Add group
+- Delete group
+
+To rename a group, select it first and then click again.
+Edit the group name in the appeared edit box.
 
 Select a group in order to show check boxes in the user list.
 Checked boxes indicate users belonging to the selected group.
-Check / uncheck boxes in order to add / remove users to / from the selected group. `(under construction)`
-
-Click the name of a selected group in order to rename it. `(under construction)`
+Check / uncheck boxes in order to add / remove users to / from the selected group.
 
 ### User operations
 
@@ -62,3 +65,6 @@ is used for generating strongly typed C# client code for invoking GraphQL querie
 Note that StrawberryShake generated code must be compiled as netstandard.
 That is why it is in the separate project `Nexar.Client` (netstandard).
 The main project `Nexar.Users` (net472) references `Nexar.Client`.
+
+Note the custom post build command in .csproj which publishes `Nexar.Client` to the output.
+This step is needed in order to correctly assemble all dependencies including used packages.

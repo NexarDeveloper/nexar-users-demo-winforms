@@ -227,6 +227,7 @@
     <Compile Include="App.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Core\ClientHelper.cs" />
+    <Compile Include="Types.cs" />
     <Compile Include="Core\WaitCursor.cs" />
     <Compile Include="Form_Management.cs">
       <SubType>Form</SubType>

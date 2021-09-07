@@ -31,6 +31,9 @@ Enter your credentials and click `Sign In`.
 The application window is activated and the workspace list is populated shortly after.
 Select a workspace from the list. As a result, the group and user lists are populated.
 
+If one of your workspaces is configured as the default then it is selected automatically.
+You may set your default workspace at <https://profile.altium.com/workspaces/>.
+
 ### Group operations
 
 Use the context menu with the following commands:

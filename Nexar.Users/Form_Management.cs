@@ -137,6 +137,7 @@ namespace Nexar.Users
                 {
                     // begin
                     Text = $"Loading... {Config.ApiEndpoint}";
+                    var defaultWorkspaceIndex = -1;
 
                     // start loading workspaces
                     Task.Run(async () =>
@@ -151,13 +152,26 @@ namespace Nexar.Users
                             comboWorkspaces.BeginUpdate();
                             try
                             {
+                                var index = -1;
                                 foreach (var workspace in App.Workspaces)
+                                {
+                                    ++index;
                                     comboWorkspaces.Items.Add(workspace.Name);
+                                    if (workspace.IsDefault)
+                                        defaultWorkspaceIndex = index;
+                                }
                             }
                             finally
                             {
                                 comboWorkspaces.Enabled = true;
                                 comboWorkspaces.EndUpdate();
+                            }
+
+                            // select the default workspace
+                            if (defaultWorkspaceIndex >= 0)
+                            {
+                                comboWorkspaces.SelectedIndex = defaultWorkspaceIndex;
+                                comboWorkspaces_SelectionChangeCommitted(null, null);
                             }
 
                             // end

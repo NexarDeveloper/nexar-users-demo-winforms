@@ -10,21 +10,22 @@ namespace Nexar.Users
     {
         public const string MyTitle = "Nexar.Users";
 
+        public static NexarMode NexarMode { get; }
         public static string Authority { get; }
         public static string ApiEndpoint { get; set; }
 
         static Config()
         {
-            var modeStr = Environment.GetEnvironmentVariable("NEXAR_MODE") ?? "Prod";
-            var mode = (Mode)Enum.Parse(typeof(Mode), modeStr, true);
+            var mode = Environment.GetEnvironmentVariable("NEXAR_MODE") ?? "Prod";
+            NexarMode = (NexarMode)Enum.Parse(typeof(NexarMode), mode, true);
 
-            switch (mode)
+            switch (NexarMode)
             {
-                case Mode.Dev:
+                case NexarMode.Prod:
                     Authority = "https://identity.nexar.com/";
                     ApiEndpoint = "https://api.nexar.com/graphql/";
                     break;
-                case Mode.Prod:
+                case NexarMode.Dev:
                     Authority = "https://identity.nexar.com/";
                     ApiEndpoint = "https://api.nexar.com/graphql/";
                     break;
@@ -32,11 +33,11 @@ namespace Nexar.Users
                     throw new Exception();
             }
         }
+    }
 
-        public enum Mode
-        {
-            Prod,
-            Dev
-        }
+    public enum NexarMode
+    {
+        Prod,
+        Dev
     }
 }

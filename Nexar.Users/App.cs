@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Nexar.Client;
 using Nexar.Client.Login;
 using System;
@@ -11,7 +11,7 @@ namespace Nexar.Users
     static class App
     {
         public static NexarClient Client { get; private set; }
-        public static LoginInfo Login { get; private set; }
+        public static string AccessToken { get; private set; }
         public static IReadOnlyList<IMyWorkspace> Workspaces { get; private set; }
 
         /// <summary>
@@ -23,11 +23,12 @@ namespace Nexar.Users
             {
                 var clientId = Environment.GetEnvironmentVariable("NEXAR_CLIENT_ID") ?? throw new InvalidOperationException("Please set environment 'NEXAR_CLIENT_ID'");
                 var clientSecret = Environment.GetEnvironmentVariable("NEXAR_CLIENT_SECRET") ?? throw new InvalidOperationException("Please set environment 'NEXAR_CLIENT_SECRET'");
-                Login = await LoginHelper.LoginAsync(
+                var login = await LoginHelper.LoginAsync(
                     clientId,
                     clientSecret,
                     new string[] { "user.access", "design.domain" },
                     Config.Authority);
+                AccessToken = login.AccessToken;
             }
             catch (Exception ex)
             {
@@ -50,7 +51,7 @@ namespace Nexar.Users
                     .ConfigureHttpClient(c =>
                     {
                         c.BaseAddress = new Uri(Config.ApiEndpoint);
-                        c.DefaultRequestHeaders.Add("token", Login.AccessToken);
+                        c.DefaultRequestHeaders.Add("Authorization", $"Bearer {AccessToken}");
                     })
                 ;
                 var services = serviceCollection.BuildServiceProvider();

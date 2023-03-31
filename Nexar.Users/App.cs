@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Nexar.Client;
 using Nexar.Client.Login;
 using System;
@@ -21,14 +21,22 @@ namespace Nexar.Users
         {
             try
             {
-                var clientId = Environment.GetEnvironmentVariable("NEXAR_CLIENT_ID") ?? throw new InvalidOperationException("Please set environment 'NEXAR_CLIENT_ID'");
-                var clientSecret = Environment.GetEnvironmentVariable("NEXAR_CLIENT_SECRET") ?? throw new InvalidOperationException("Please set environment 'NEXAR_CLIENT_SECRET'");
-                var login = await LoginHelper.LoginAsync(
-                    clientId,
-                    clientSecret,
-                    new string[] { "user.access", "design.domain" },
-                    Config.Authority);
-                AccessToken = login.AccessToken;
+                if (Config.Authority.Contains(":"))
+                {
+                    var clientId = Environment.GetEnvironmentVariable("NEXAR_CLIENT_ID") ?? throw new InvalidOperationException("Please set environment 'NEXAR_CLIENT_ID'");
+                    var clientSecret = Environment.GetEnvironmentVariable("NEXAR_CLIENT_SECRET") ?? throw new InvalidOperationException("Please set environment 'NEXAR_CLIENT_SECRET'");
+                    var login = await LoginHelper.LoginAsync(
+                        clientId,
+                        clientSecret,
+                        new string[] { "user.access", "design.domain" },
+                        Config.Authority);
+
+                    AccessToken = login.AccessToken;
+                }
+                else
+                {
+                    AccessToken = Config.Authority;
+                }
             }
             catch (Exception ex)
             {

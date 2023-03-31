@@ -9,29 +9,13 @@ namespace Nexar.Users
     {
         public const string MyTitle = "Nexar.Users";
 
-        public static NexarMode NexarMode { get; }
-        public static string Authority { get; }
-        public static string ApiEndpoint { get; set; }
+        public static string Authority { get; private set; }
+        public static string ApiEndpoint { get; private set; }
 
         static Config()
         {
-            var mode = Environment.GetEnvironmentVariable("NEXAR_MODE") ?? "Prod";
-            NexarMode = (NexarMode)Enum.Parse(typeof(NexarMode), mode, true);
-
-            switch (NexarMode)
-            {
-                case NexarMode.Prod:
-                    Authority = "https://identity.nexar.com/";
-                    ApiEndpoint = "https://api.nexar.com/graphql/";
-                    break;
-                default:
-                    throw new Exception();
-            }
+            Authority = Environment.GetEnvironmentVariable("NEXAR_AUTHORITY") ?? "https://identity.nexar.com";
+            ApiEndpoint = Environment.GetEnvironmentVariable("NEXAR_API_URL") ?? "https://api.nexar.com/graphql";
         }
-    }
-
-    public enum NexarMode
-    {
-        Prod,
     }
 }

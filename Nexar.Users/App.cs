@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Nexar.Client;
+﻿using Nexar.Client;
 using Nexar.Client.Login;
 using System;
 using System.Collections.Generic;
@@ -53,20 +52,9 @@ namespace Nexar.Users
         {
             try
             {
-                var serviceCollection = new ServiceCollection();
-                serviceCollection
-                    .AddNexarClient()
-                    .ConfigureHttpClient(c =>
-                    {
-                        c.BaseAddress = new Uri(Config.ApiEndpoint);
-                        c.DefaultRequestHeaders.Add("Authorization", $"Bearer {AccessToken}");
-                    })
-                ;
-                var services = serviceCollection.BuildServiceProvider();
-
-                Client = services.GetRequiredService<NexarClient>();
+                Client = NexarClientFactory.CreateClient(Config.ApiEndpoint, AccessToken);
                 var res = await Client.Workspaces.ExecuteAsync();
-                ClientHelper.EnsureNoErrors(res);
+                res.AssertNoErrors();
                 Workspaces = res.Data.DesWorkspaces;
             }
             catch (Exception ex)

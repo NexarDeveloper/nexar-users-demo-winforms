@@ -30,7 +30,7 @@ namespace Nexar.Users
                     var groups = Task.Run(async () =>
                     {
                         var res = await App.Client.Groups.ExecuteAsync(_workspace.Url);
-                        ClientHelper.EnsureNoErrors(res);
+                        res.AssertNoErrors();
                         return res.Data.DesTeam.Groups.OrderBy(x => x.Name);
                     }).Result;
 
@@ -66,7 +66,7 @@ namespace Nexar.Users
                     var users = Task.Run(async () =>
                     {
                         var res = await App.Client.Users.ExecuteAsync(_workspace.Url);
-                        ClientHelper.EnsureNoErrors(res);
+                        res.AssertNoErrors();
                         return res.Data.DesTeam.Users.OrderBy(x => x.Email);
                     }).Result;
 
@@ -218,7 +218,7 @@ namespace Nexar.Users
                     var newGroup = Task.Run(async () =>
                     {
                         var res = await App.Client.CreateGroup.ExecuteAsync(_workspace.Url, newGroupName);
-                        ClientHelper.EnsureNoErrors(res);
+                        res.AssertNoErrors();
 
                         return new Groups_DesTeam_Groups_DesUserGroup(res.Data.DesCreateUserGroup.Id, newGroupName);
                     }).Result;
@@ -266,7 +266,7 @@ namespace Nexar.Users
                     Task.Run(async () =>
                     {
                         var res = await App.Client.DeleteGroup.ExecuteAsync(groupId);
-                        ClientHelper.EnsureNoErrors(res);
+                        res.AssertNoErrors();
                     }).Wait();
 
                     RefreshGroupList();
@@ -295,7 +295,7 @@ namespace Nexar.Users
                     Task.Run(async () =>
                     {
                         var res = await App.Client.RenameGroup.ExecuteAsync(groupId, e.Label);
-                        ClientHelper.EnsureNoErrors(res);
+                        res.AssertNoErrors();
                     }).Wait();
 
                     listViewGroup.SelectedItems[0].Name = e.Label;
@@ -365,7 +365,7 @@ namespace Nexar.Users
                             Email = user.UserName
                         };
                         var res = await App.Client.CreateUser.ExecuteAsync(input);
-                        ClientHelper.EnsureNoErrors(res);
+                        res.AssertNoErrors();
                     }).Wait();
 
                     var groupId = GetSelectedGroupId();
@@ -414,7 +414,7 @@ namespace Nexar.Users
                             LastName = user2.LastName,
                         };
                         var res = await App.Client.UpdateUser.ExecuteAsync(input);
-                        ClientHelper.EnsureNoErrors(res);
+                        res.AssertNoErrors();
                     }).Wait();
 
                     var groupId = GetSelectedGroupId();
@@ -454,7 +454,7 @@ namespace Nexar.Users
                             UserId = user.UserId,
                         };
                         var res = await App.Client.DeleteUser.ExecuteAsync(input);
-                        ClientHelper.EnsureNoErrors(res);
+                        res.AssertNoErrors();
                     }).Wait();
 
                     var groupId = GetSelectedGroupId();
@@ -488,7 +488,7 @@ namespace Nexar.Users
                         {
                             // add user to group
                             var res = await App.Client.AddUserToGroup.ExecuteAsync(groupId, user.UserId);
-                            ClientHelper.EnsureNoErrors(res);
+                            res.AssertNoErrors();
                         }).Wait();
 
                         _ignoreCheckboxEvents = true;
@@ -513,7 +513,7 @@ namespace Nexar.Users
                         {
                             // remove user from group
                             var res = await App.Client.RemoveUserFromGroup.ExecuteAsync(groupId, user.UserId);
-                            ClientHelper.EnsureNoErrors(res);
+                            res.AssertNoErrors();
                         }).Wait();
 
                         user.Groups.RemoveAll(x => x.Id == groupId);
